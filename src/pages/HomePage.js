@@ -1,71 +1,66 @@
 import React, { useState } from 'react';
-import NavigationBar from '../components/organisms/NavigationBar';
 import LeftView from '../components/organisms/LeftView';
 import RightContent from '../components/organisms/RightContent';
-import Heading from '../components/atoms/Heading';
-import Paragraph from '../components/atoms/Paragraph';
-import ImageWrapper from '../components/atoms/ImageWrapper';
-
-const initialSpotlightContent = {
-  type: 'video',
-  src: '/assets/painting.mp4',
-  alt: 'Spotlight Video',
-};
 
 const contentItems = [
   {
+    title: 'Spotlight Video',
+    src: '/assets/painting.mp4',
+    type: 'video',
+  },
+  {
     title: 'Sunset Over the Mountains',
     description: 'A beautiful painting capturing the warmth of a sunset.',
-    imageUrl: '/assets/sunset.jpg',
+    src: '/assets/sunset.jpg',
     type: 'image',
-    tags: ['New', 'For Sale'],
   },
   {
     title: 'Forest Path',
     description: 'A peaceful path through a forest in autumn.',
-    imageUrl: '/assets/forest.jpg',
+    src: '/assets/forest.jpg',
     type: 'image',
-    tags: ['Available'],
   },
   {
     title: 'Ocean Waves',
     description: 'Waves crashing on a rocky shore under a cloudy sky.',
-    imageUrl: '/assets/ocean.jpg',
+    src: '/assets/ocean.jpg',
     type: 'image',
-    tags: ['Featured'],
   },
 ];
 
 function HomePage() {
-  const [spotlightContent, setSpotlightContent] = useState(initialSpotlightContent);
+  const [currentIndex, setCurrentIndex] = useState(0);
 
-  const handleSelectItem = (item) => {
-    if (item && item.type && item.imageUrl) {
-      setSpotlightContent(
-        <div>
-          <Heading level={2} className="text-blue-700 font-kosugi-maru">{item.title}</Heading>
-          <Paragraph className="mt-2 font-kosugi-maru">{item.description}</Paragraph>
-          <ImageWrapper src={item.imageUrl} alt={item.title} className="mt-4" />
-        </div>
-      );
-    }
+  const spotlightContent = contentItems[currentIndex];
+
+  // Handle next item (cycle to the next)
+  const handleNextItem = () => {
+    setCurrentIndex((prevIndex) => (prevIndex + 1) % contentItems.length);
+  };
+
+  // Handle previous item (cycle to the previous)
+  const handlePreviousItem = () => {
+    setCurrentIndex((prevIndex) =>
+      prevIndex === 0 ? contentItems.length - 1 : prevIndex - 1
+    );
   };
 
   return (
-    <>
-      {/* Navigation Bar */}
-      <NavigationBar />
-
-      {/* Main Content */}
-      <div className="bg-white font-kosugi-maru" style={{ backgroundImage: 'url(/assets/images/texture.png)' }}>
-        {spotlightContent && (
-          <LeftView spotlightContent={spotlightContent} menuItems={['Home', 'Portfolio', 'Contact']} />
-        )}
-        {contentItems && contentItems.length > 0 && (
-          <RightContent contentItems={contentItems} onSelectItem={handleSelectItem} />
-        )}
+    <div className="flex w-full h-screen">
+      {/* LeftView */}
+      <div className="w-[61.8%]">
+        <LeftView
+          spotlightContent={spotlightContent}
+          handleNextItem={handleNextItem}
+          handlePreviousItem={handlePreviousItem}
+        />
       </div>
-    </>
+
+      {/* RightContent */}
+      <div className="w-[38.2%]">
+        <RightContent contentItems={contentItems} />
+      </div>
+    </div>
   );
 }
 

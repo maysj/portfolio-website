@@ -1,29 +1,73 @@
-import React from 'react';
+import React, { useRef, useEffect } from 'react';
 import ImageWrapper from '../atoms/ImageWrapper';
-import HamburgerMenu from '../molecules/HamburgerMenu';
 
-function RightContent({ contentItems, onSelectItem }) {
+function RightContent({ contentItems }) {
+  const scrollRef = useRef(null);
+
+  // Map vertical scroll to horizontal scroll
+  useEffect(() => {
+    const scrollContainer = scrollRef.current;
+    
+    const handleScroll = (e) => {
+      e.preventDefault();
+      if (scrollContainer) {
+        scrollContainer.scrollLeft += e.deltaY; // Map vertical scroll to horizontal scroll
+      }
+    };
+
+    if (scrollContainer) {
+      scrollContainer.addEventListener('wheel', handleScroll);
+    }
+
+    return () => {
+      if (scrollContainer) {
+        scrollContainer.removeEventListener('wheel', handleScroll);
+      }
+    };
+  }, []);
+
+  // Endless scrolling behavior
+  useEffect(() => {
+    const scrollContainer = scrollRef.current;
+
+    const loopScroll = () => {
+      if (scrollContainer.scrollLeft >= scrollContainer.scrollWidth - scrollContainer.clientWidth) {
+        scrollContainer.scrollLeft = 0; // Jump back to the start
+      }
+      if (scrollContainer.scrollLeft === 0) {
+        scrollContainer.scrollLeft = scrollContainer.scrollWidth - scrollContainer.clientWidth; // Jump to the end
+      }
+    };
+
+    if (scrollContainer) {
+      scrollContainer.addEventListener('scroll', loopScroll);
+    }
+
+    return () => {
+      if (scrollContainer) {
+        scrollContainer.removeEventListener('scroll', loopScroll);
+      }
+    };
+  }, []);
+
   return (
-    <div className="w-[60%] ml-[40%] p-8 overflow-auto relative">
-      {/* Hamburger Menu */}
-      <div className="absolute top-4 right-4">
-        <HamburgerMenu menuItems={['Home', 'Portfolio', 'Contact']} />
-      </div>
-
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+    <div ref={scrollRef} className="overflow-x-auto whitespace-nowrap h-full p-8">
+      {/* Horizontal grid with two rows */}
+      <div className="grid grid-rows-2 grid-flow-col gap-4">
         {contentItems.map((item, index) => (
           <div
             key={index}
-            className="bg-white p-4 rounded-lg shadow-lg cursor-pointer transition-transform transform hover:scale-105"
-            onClick={() => onSelectItem(item)}
+            className={`relative bg-white rounded-lg shadow-lg p-4 transition-transform hover:scale-105 
+              ${index % 4 === 0 ? 'row-span-2 w-64' : 'w-48 h-48'} 
+              ${index % 3 === 0 ? 'h-64' : ''}`}
           >
             <ImageWrapper
               src={item.imageUrl}
               alt={item.title}
-              className="w-full h-40 object-cover rounded-md"
+              className="w-full h-full object-cover rounded-md"
             />
-            <p className="mt-4 text-lg font-medium text-gray-800">{item.title}</p>
-            <p className="text-sm text-gray-500">{item.date}</p>
+            <h2 className="mt-4 text-lg font-bold text-gray-900">{item.title}</h2>
+            <p className="text-sm text-gray-500">{item.description}</p>
           </div>
         ))}
       </div>
